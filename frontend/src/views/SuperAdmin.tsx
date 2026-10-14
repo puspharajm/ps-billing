@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
 import { Users, Plus, Trash2, Edit3, ShieldCheck, Shield, Key, Save, X, UserPlus, AlertTriangle, Award, Upload } from 'lucide-react';
 import { API_URL } from '../api';
+import SystemAssistant from './SystemAssistant';
 
 const t = (val: string) => val;
 
@@ -40,7 +41,7 @@ export default function SuperAdmin() {
   const [success, setSuccess] = useState('');
 
   // Admin section tabs
-  const [activeAdminTab, setActiveAdminTab] = useState<'users' | 'licensees'>('users');
+  const [activeAdminTab, setActiveAdminTab] = useState<'users' | 'licensees' | 'problems'>('users');
 
   // Create user form
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -363,12 +364,12 @@ export default function SuperAdmin() {
               <UserPlus size={16} />
               <span>{t('New User')}</span>
             </button>
-          ) : (
+          ) : activeAdminTab === 'licensees' ? (
             <button className="btn btn-primary" onClick={() => setShowLicenseForm(!showLicenseForm)}>
               <Plus size={16} />
               <span>{t('New Licensee')}</span>
             </button>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -385,6 +386,12 @@ export default function SuperAdmin() {
           onClick={() => { setActiveAdminTab('licensees'); setError(''); setSuccess(''); }}
         >
           {t('Software Licensees')}
+        </button>
+        <button
+          className={`tab-btn ${activeAdminTab === 'problems' ? 'active' : ''}`}
+          onClick={() => { setActiveAdminTab('problems'); setError(''); setSuccess(''); }}
+        >
+          {t('Problem Solver')}
         </button>
       </div>
 
@@ -455,6 +462,8 @@ export default function SuperAdmin() {
           </div>
         </div>
       )}
+
+      {activeAdminTab === 'problems' && <SystemAssistant />}
 
       {activeAdminTab === 'users' && (
         <>
