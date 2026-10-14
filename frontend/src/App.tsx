@@ -39,6 +39,7 @@ export interface CompanySettings {
   branch: string;
   terms_conditions: string;
   custom_print_layout?: string;
+  logo_data?: string | null;
 }
 
 export interface CustomSectionDef {

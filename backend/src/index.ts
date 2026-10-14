@@ -944,7 +944,15 @@ app.get('/api/settings', async (req: any, res) => {
       settings = await get<CompanySettings>("SELECT * FROM settings ORDER BY id DESC LIMIT 1");
     }
 
-    res.json(settings);
+    const licenseNumber = req.user?.license_number;
+    const licensee = licenseNumber && licenseNumber !== 'Admin'
+      ? await getGlobal<{ logo_data: string | null }>(
+        'SELECT logo_data FROM licensees WHERE license_number = ?',
+        [licenseNumber],
+      )
+      : null;
+
+    res.json(settings ? { ...settings, logo_data: licensee?.logo_data ?? null } : settings);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

@@ -165,6 +165,8 @@ export const BasicWelcome: React.FC<BasicWelcomeProps> = ({ settings }) => {
                 <span style={{ fontSize: '1.1rem', letterSpacing: '1px' }}>{t('ADMIN')}</span>
                 <span style={{ fontSize: '0.55rem', background: '#333', padding: '1px 3px', marginTop: '1px' }}>{t('CONSOLE')}</span>
               </div>
+            ) : settings.logo_data ? (
+              <img src={settings.logo_data} alt={`${settings.company_name} logo`} style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#fff' }} />
             ) : isGroups ? (
               <img src="/logo.jpg" alt="SMR Groups" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : isTN ? (
