@@ -1,0 +1,88 @@
+.topbar {
+  height: var(--topbar-height);
+  background-color: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: fixed;
+  top: 0;
+  left: var(--sidebar-width);
+  right: 0;
+  z-index: 90;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.page-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 0.15rem;
+}
+
+.enterprise-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.gstin-badge {
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--border-radius-sm);
+  font-family: monospace;
+  color: var(--color-accent-blue);
+  margin-left: 0.5rem;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.time-widget {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  padding: 0.4rem 1rem;
+  border-radius: var(--border-radius-md);
+}
+
+.datetime-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.clock-glowing {
+  font-family: monospace;
+  color: var(--color-accent-gold);
+  text-shadow: 0 0 4px rgba(212, 175, 55, 0.4);
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: rgba(0, 210, 255, 0.08);
+  border: 1px solid rgba(0, 210, 255, 0.2);
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--border-radius-md);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-accent-blue);
+}
+
+.text-green {
+  color: #10b981;
+}

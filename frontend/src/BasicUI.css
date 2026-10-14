@@ -1,0 +1,395 @@
+/* Windows Classic 95/98/2000 Retro UI CSS Stylesheet */
+
+[data-ui-mode="basic"] {
+  /* Classic retro theme colors */
+  --classic-bg-face: #d4d0c8;
+  --classic-bg-sand: #e7ded0;
+  --classic-border-light: #ffffff;
+  --classic-border-shadow: #808080;
+  --classic-border-dark: #404040;
+  --classic-text-dark: #000000;
+  --classic-text-blue: #000080;
+  --classic-text-red: #800000;
+  --classic-accent-blue: #0a246a;
+
+  /* Modern variable overrides for retro theme */
+  --color-bg-primary: var(--classic-bg-sand);
+  --color-bg-secondary: var(--classic-bg-face);
+  --color-bg-tertiary: #ffffff;
+  --color-bg-glass: var(--classic-bg-face);
+  --color-border: var(--classic-border-shadow);
+  --color-border-light: var(--classic-border-light);
+  --color-text-primary: var(--classic-text-dark);
+  --color-text-secondary: var(--classic-text-dark);
+  --color-text-muted: #404040;
+
+  /* Reset rounded corners for retro UI */
+  --border-radius-sm: 0px;
+  --border-radius-md: 0px;
+  --border-radius-lg: 0px;
+  --border-radius-xl: 0px;
+
+  /* Global element overrides when basic mode is active */
+  background-color: var(--classic-bg-sand) !important;
+  color: var(--classic-text-dark) !important;
+  font-family: 'Tahoma', 'MS Sans Serif', 'Arial', sans-serif !important;
+}
+
+[data-ui-mode="basic"] body {
+  background-color: var(--classic-bg-sand) !important;
+  color: var(--classic-text-dark) !important;
+}
+
+/* Outer Window Frame Bevels (Outward 3D) */
+.classic-bevel-out {
+  background-color: var(--classic-bg-face);
+  border-top: 2px solid var(--classic-border-light);
+  border-left: 2px solid var(--classic-border-light);
+  border-right: 2px solid var(--classic-border-shadow);
+  border-bottom: 2px solid var(--classic-border-shadow);
+  box-shadow: 1px 1px 0px 0px var(--classic-border-dark),
+              inset 1px 1px 0px 0px var(--classic-border-light);
+}
+
+/* Inner Input Bevels (Inward 3D Inset) */
+.classic-bevel-in {
+  background-color: #ffffff;
+  border-top: 2px solid var(--classic-border-shadow);
+  border-left: 2px solid var(--classic-border-shadow);
+  border-right: 2px solid var(--classic-border-light);
+  border-bottom: 2px solid var(--classic-border-light);
+  box-shadow: inset 1px 1px 0px 0px var(--classic-border-dark);
+}
+
+/* Classic Button Controls */
+.classic-btn {
+  background-color: var(--classic-bg-face);
+  color: var(--classic-text-dark);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: normal;
+  padding: 4px 14px;
+  border-top: 2px solid var(--classic-border-light);
+  border-left: 2px solid var(--classic-border-light);
+  border-right: 2px solid var(--classic-border-shadow);
+  border-bottom: 2px solid var(--classic-border-shadow);
+  box-shadow: 1px 1px 0px 0px var(--classic-border-dark);
+  cursor: pointer;
+  outline: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  user-select: none;
+}
+
+.classic-btn:active {
+  border-top: 2px solid var(--classic-border-shadow);
+  border-left: 2px solid var(--classic-border-shadow);
+  border-right: 2px solid var(--classic-border-light);
+  border-bottom: 2px solid var(--classic-border-light);
+  box-shadow: inset 1px 1px 0px 0px var(--classic-border-dark);
+  padding: 5px 13px 3px 15px; /* Depressed movement offset */
+}
+
+/* Action button configurations */
+.classic-btn-primary {
+  font-weight: bold;
+}
+
+.classic-btn-green {
+  border-color: #72a372 #2d552d #2d552d #72a372;
+}
+
+/* Form Controls & Inputs */
+.classic-input, .classic-select {
+  background-color: #ffffff;
+  color: var(--classic-text-dark);
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 3px 6px;
+  border-top: 2px solid var(--classic-border-shadow);
+  border-left: 2px solid var(--classic-border-shadow);
+  border-right: 2px solid var(--classic-border-light);
+  border-bottom: 2px solid var(--classic-border-light);
+  box-shadow: inset 1px 1px 0px 0px var(--classic-border-dark);
+  outline: none;
+  border-radius: 0 !important;
+}
+
+.classic-input:focus, .classic-select:focus {
+  background-color: #ffffdd; /* Subtle yellow focus glow of retro text boxes */
+}
+
+/* Classic Form Labels */
+.classic-label {
+  font-size: 0.85rem;
+  color: var(--classic-text-dark);
+  font-weight: bold;
+  user-select: none;
+}
+
+/* Windows Classic Header Panels */
+.classic-window-header {
+  color: var(--classic-text-red);
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: bold;
+  font-size: 1.35rem;
+  border-bottom: 2px solid var(--classic-border-shadow);
+  padding-bottom: 4px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+/* Classic Data Tables */
+.classic-table-container {
+  overflow: auto;
+  border-top: 2px solid var(--classic-border-shadow);
+  border-left: 2px solid var(--classic-border-shadow);
+  border-right: 2px solid var(--classic-border-light);
+  border-bottom: 2px solid var(--classic-border-light);
+  background-color: #ffffff;
+}
+
+.classic-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  background-color: #ffffff;
+}
+
+.classic-table th {
+  background-color: var(--classic-bg-face);
+  color: var(--classic-text-dark);
+  font-weight: bold;
+  padding: 4px 8px;
+  text-align: left;
+  border-right: 1px solid var(--classic-border-shadow);
+  border-bottom: 2px solid var(--classic-border-shadow);
+  user-select: none;
+}
+
+.classic-table td {
+  padding: 4px 8px;
+  border-right: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  color: #000000;
+}
+
+.classic-table tr:nth-child(even) td {
+  background-color: #f6f5f0;
+}
+
+.classic-table tr:hover td {
+  background-color: var(--classic-accent-blue) !important;
+  color: #ffffff !important;
+}
+
+/* Left panel lists selection */
+.classic-listbox {
+  background-color: #ffffff;
+  border: 2px inset var(--classic-border-shadow);
+  max-height: 380px;
+  overflow-y: scroll;
+}
+
+.classic-listbox-item {
+  padding: 4px 8px;
+  font-family: monospace;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: #000000;
+}
+
+.classic-listbox-item:hover {
+  background-color: var(--classic-bg-sand);
+}
+
+.classic-listbox-item.active {
+  background-color: var(--classic-accent-blue);
+  color: #ffffff;
+}
+
+/* Scrollbar styling for retro feel */
+[data-ui-mode="basic"] ::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+  background-color: var(--classic-bg-face);
+  border-top: 1px solid var(--classic-border-light);
+  border-left: 1px solid var(--classic-border-light);
+}
+
+[data-ui-mode="basic"] ::-webkit-scrollbar-thumb {
+  background-color: var(--classic-bg-face);
+  border-top: 2px solid var(--classic-border-light);
+  border-left: 2px solid var(--classic-border-light);
+  border-right: 2px solid var(--classic-border-shadow);
+  border-bottom: 2px solid var(--classic-border-shadow);
+  box-shadow: 1px 1px 0px 0px var(--classic-border-dark);
+}
+
+[data-ui-mode="basic"] ::-webkit-scrollbar-button {
+  background-color: var(--classic-bg-face);
+  display: block;
+  height: 16px;
+  width: 16px;
+  border-top: 1.5px solid var(--classic-border-light);
+  border-left: 1.5px solid var(--classic-border-light);
+  border-right: 1.5px solid var(--classic-border-shadow);
+  border-bottom: 1.5px solid var(--classic-border-shadow);
+}
+
+/* Glass-card override for Windows Classic panels */
+[data-ui-mode="basic"] .glass-card {
+  background-color: var(--classic-bg-face) !important;
+  border-top: 2px solid var(--classic-border-light) !important;
+  border-left: 2px solid var(--classic-border-light) !important;
+  border-right: 2px solid var(--classic-border-shadow) !important;
+  border-bottom: 2px solid var(--classic-border-shadow) !important;
+  box-shadow: 1px 1px 0px 0px var(--classic-border-dark),
+              inset 1px 1px 0px 0px var(--classic-border-light) !important;
+  border-radius: 0 !important;
+  color: var(--classic-text-dark) !important;
+  backdrop-filter: none !important;
+}
+
+/* Form Input & Select element override */
+[data-ui-mode="basic"] .form-control {
+  background-color: #ffffff !important;
+  color: var(--classic-text-dark) !important;
+  border-top: 2px solid var(--classic-border-shadow) !important;
+  border-left: 2px solid var(--classic-border-shadow) !important;
+  border-right: 2px solid var(--classic-border-light) !important;
+  border-bottom: 2px solid var(--classic-border-light) !important;
+  box-shadow: inset 1px 1px 0px 0px var(--classic-border-dark) !important;
+  border-radius: 0 !important;
+  font-family: inherit !important;
+  padding: 4px 8px !important;
+}
+
+[data-ui-mode="basic"] .search-input-wrapper input {
+  padding-left: 35px !important;
+}
+
+/* Standard Button overrides */
+[data-ui-mode="basic"] .btn {
+  background-color: var(--classic-bg-face) !important;
+  color: var(--classic-text-dark) !important;
+  border-top: 2px solid var(--classic-border-light) !important;
+  border-left: 2px solid var(--classic-border-light) !important;
+  border-right: 2px solid var(--classic-border-shadow) !important;
+  border-bottom: 2px solid var(--classic-border-shadow) !important;
+  box-shadow: 1px 1px 0px 0px var(--classic-border-dark) !important;
+  border-radius: 0 !important;
+  font-family: inherit !important;
+  font-weight: normal !important;
+  padding: 6px 14px !important;
+}
+
+[data-ui-mode="basic"] .btn:active {
+  border-top: 2px solid var(--classic-border-shadow) !important;
+  border-left: 2px solid var(--classic-border-shadow) !important;
+  border-right: 2px solid var(--classic-border-light) !important;
+  border-bottom: 2px solid var(--classic-border-light) !important;
+  box-shadow: inset 1px 1px 0px 0px var(--classic-border-dark) !important;
+}
+
+/* Table element overrides */
+[data-ui-mode="basic"] .table-glass {
+  border-collapse: collapse !important;
+  border-top: 2px solid var(--classic-border-shadow) !important;
+  border-left: 2px solid var(--classic-border-shadow) !important;
+  border-right: 2px solid var(--classic-border-light) !important;
+  border-bottom: 2px solid var(--classic-border-light) !important;
+  background-color: #ffffff !important;
+  border-radius: 0 !important;
+}
+
+[data-ui-mode="basic"] .table-glass th {
+  background-color: var(--classic-bg-face) !important;
+  color: var(--classic-text-dark) !important;
+  border-right: 1px solid var(--classic-border-shadow) !important;
+  border-bottom: 2px solid var(--classic-border-shadow) !important;
+}
+
+[data-ui-mode="basic"] .table-glass td {
+  border-right: 1px solid #e0e0e0 !important;
+  border-bottom: 1px solid #e0e0e0 !important;
+  color: #000000 !important;
+  background-color: #ffffff !important;
+}
+
+[data-ui-mode="basic"] .table-glass tr:hover td {
+  background-color: var(--classic-accent-blue) !important;
+  color: #ffffff !important;
+}
+
+/* Badge overrides */
+[data-ui-mode="basic"] .badge {
+  border-radius: 0 !important;
+  border: 1px solid var(--classic-border-shadow) !important;
+  font-weight: bold !important;
+  font-size: 0.75rem !important;
+}
+
+/* Heading styling overrides */
+[data-ui-mode="basic"] h2 {
+  color: var(--classic-text-red) !important;
+  font-family: 'Georgia', serif !important;
+  font-weight: bold !important;
+}
+
+[data-ui-mode="basic"] h3 {
+  color: var(--classic-text-blue) !important;
+  font-family: 'Georgia', serif !important;
+  font-weight: bold !important;
+}
+
+[data-ui-mode="basic"] .view-container {
+  background-color: var(--classic-bg-sand) !important;
+}
+
+/* Tab navigation overrides */
+[data-ui-mode="basic"] .tabs-header {
+  border-bottom: 2px solid var(--classic-border-shadow) !important;
+  gap: 4px !important;
+}
+
+[data-ui-mode="basic"] .tab-btn {
+  color: #808080 !important; /* Classic Windows dark grey for unselected tab text */
+  font-family: inherit !important;
+  font-size: 0.85rem !important;
+  font-weight: bold !important;
+  background-color: var(--classic-bg-face) !important;
+  padding: 4px 12px !important;
+  border-top: 2px solid var(--classic-border-light) !important;
+  border-left: 2px solid var(--classic-border-light) !important;
+  border-right: 2px solid var(--classic-border-shadow) !important;
+  border-bottom: none !important;
+  margin-bottom: -2px !important;
+  z-index: 1 !important;
+  border-top-left-radius: 4px !important;
+  border-top-right-radius: 4px !important;
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  box-shadow: 1px 1px 0px 0px var(--classic-border-dark) !important;
+}
+
+[data-ui-mode="basic"] .tab-btn:hover {
+  color: var(--classic-text-dark) !important;
+  background-color: #e0dbd3 !important;
+}
+
+[data-ui-mode="basic"] .tab-btn.active {
+  color: var(--classic-text-dark) !important; /* Classic Windows black for active tab text */
+  background-color: var(--classic-bg-sand) !important;
+  border-top: 2px solid var(--classic-border-light) !important;
+  border-left: 2px solid var(--classic-border-light) !important;
+  border-right: 2px solid var(--classic-border-shadow) !important;
+  border-bottom: 2px solid var(--classic-bg-sand) !important; /* Cut-through to the beige sheet below */
+  z-index: 2 !important;
+  box-shadow: inset 1px 1px 0px 0px var(--classic-border-light) !important;
+}
+
+

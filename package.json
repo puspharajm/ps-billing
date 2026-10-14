@@ -1,0 +1,68 @@
+{
+  "name": "smr-groups-billing",
+  "version": "1.2.1",
+  "description": "SMR Groups Billing Software — Unified launcher for backend and frontend",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node start.js",
+    "build": "node start.js --build",
+    "backend": "cd backend && npx ts-node src/index.ts",
+    "frontend": "cd frontend && npm run dev",
+    "build:all": "cd frontend && npm run build && cd ../backend && npm run build",
+    "electron:start": "electron .",
+    "electron:pack": "npm run build:all && electron-builder --dir",
+    "electron:dist": "npm run build:all && node scripts/build-desktop.js"
+  },
+  "build": {
+    "appId": "com.smrgroups.billing",
+    "productName": "SMR Groups Billing",
+    "directories": {
+      "output": "dist"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "puspharajm",
+      "repo": "ps-billing"
+    },
+    "files": [
+      "main.js",
+      "backend/dist/**/*",
+      "backend/package.json",
+      {
+        "from": "backend/.electron-build/node_modules",
+        "to": "backend/node_modules"
+      },
+      "frontend/dist/**/*"
+    ],
+    "asarUnpack": [
+      "**/*.node",
+      "backend/node_modules/sqlite3/**"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "frontend/public/logo.jpg",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "keywords": [
+    "billing",
+    "gst",
+    "invoice"
+  ],
+  "author": "Puspharaj M",
+  "license": "ISC",
+  "devDependencies": {
+    "@electron/rebuild": "^3.7.1",
+    "concurrently": "10.0.1",
+    "cross-env": "10.1.0",
+    "electron": "42.3.0",
+    "electron-builder": "26.8.1",
+    "wait-on": "9.0.10"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/dist-ssr": true
+  },
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/dist/**": true
+  },
+  "eslint.options": {
+    "overrideConfigFile": "frontend/eslint.config.js"
+  },
+  "eslint.workingDirectories": [
+    "./frontend"
+  ]
+}
