@@ -10,7 +10,7 @@
       "framework": "express",
       "installCommand": "npm ci --include=dev",
       "buildCommand": "npm run build",
-      "entrypoint": "dist/index.js"
+      "entrypoint": "index.js"
     }
   },
   "rewrites": [
