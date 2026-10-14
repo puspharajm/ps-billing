@@ -63,6 +63,8 @@ For server deployments, configure `DATABASE_URL` or `NEON_DATABASE_URL` as appro
 
 The Vercel project uses the `services` configuration in `vercel.json` to deploy the frontend and backend together. In Vercel, set the project's framework preset to **Services** under **Settings > Build and Deployment**, then redeploy.
 
+The React website includes Vercel Web Analytics. Enable Web Analytics for the project in the Vercel dashboard to view website page views; the desktop app does not send analytics events.
+
 The `neon-branching.yml` GitHub Actions workflow creates a Neon preview branch for each opened, reopened, or updated pull request and deletes it when the pull request closes. Set `NEON_PROJECT_ID` as a repository Actions variable and `NEON_API_KEY` as a repository Actions secret under **Settings > Secrets and variables > Actions**. Preview branches expire after 14 days. Pull requests from forks cannot access repository secrets, so the workflow cannot create or delete Neon branches for those pull requests.
 
 ## Building the Windows Installer
