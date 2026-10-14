@@ -1,4 +1,4 @@
-import sqlite3 from 'sqlite3';
+import type sqlite3 from 'sqlite3';
 import { Pool } from 'pg';
 import path from 'path';
 import fs from 'fs';
@@ -74,6 +74,7 @@ async function getOrInitializeTenantDb(
 
 // SQLite Helpers
 function initSqliteMaster() {
+  const SQLite: typeof sqlite3 = require('sqlite3');
   console.log("Initializing Master SQLite database at", DB_FILE);
   
   const isPackaged = typeof process !== 'undefined'
@@ -92,7 +93,7 @@ function initSqliteMaster() {
     }
   }
 
-  masterDb = new sqlite3.Database(DB_FILE);
+  masterDb = new SQLite.Database(DB_FILE);
   masterDb.serialize(() => {
     masterDb.run("PRAGMA foreign_keys = ON;");
   });
@@ -362,6 +363,10 @@ export async function initializeDatabase() {
       isOnline = true;
       console.log('Using Neon auth/user database as the configured primary for login and user data.');
     } catch (neonErr: any) {
+      if (process.env.VERCEL) {
+        console.error('Neon auth/user database unavailable in Vercel; local SQLite is not a persistent server database.', neonErr.message || neonErr);
+        throw neonErr;
+      }
       console.warn('Neon auth/user database unavailable. Falling back to local SQLite.', neonErr.message || neonErr);
       initSqliteMaster();
       isOnline = false;
@@ -592,7 +597,8 @@ export async function getTenantDb(userId: number): Promise<sqlite3.Database | st
     }
     
     return getOrInitializeTenantDb(dbName, async () => {
-      const tDb = new sqlite3.Database(fullPath);
+      const SQLite: typeof sqlite3 = require('sqlite3');
+      const tDb = new SQLite.Database(fullPath);
 
       tDb.serialize(() => {
         tDb.run("PRAGMA foreign_keys = ON;");

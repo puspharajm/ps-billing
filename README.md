@@ -61,7 +61,7 @@ For server deployments, configure `DATABASE_URL` or `NEON_DATABASE_URL` as appro
 
 ### Vercel and Neon pull-request branches
 
-The Vercel project uses the `services` configuration in `vercel.json` to deploy the frontend and backend together. The backend service installs its own locked dependencies and builds its TypeScript entrypoint before deployment. In Vercel, set the project's framework preset to **Services** under **Settings > Build and Deployment**, then redeploy.
+The Vercel project uses the `services` configuration in `vercel.json` to deploy the frontend and backend together. The backend service installs its locked dependencies, type-checks the TypeScript, and bundles the server entrypoint before deployment. Configure a valid `DATABASE_URL` or `NEON_DATABASE_URL` in Vercel; the hosted service requires persistent Postgres and will not fall back to ephemeral SQLite. In Vercel, set the project's framework preset to **Services** under **Settings > Build and Deployment**, then redeploy.
 
 The React website includes Vercel Web Analytics. Enable Web Analytics for the project in the Vercel dashboard to view website page views; the desktop app does not send analytics events.
 
@@ -69,7 +69,7 @@ The `neon-branching.yml` GitHub Actions workflow creates a Neon preview branch f
 
 ## Building the Windows Installer
 
-The Windows GitHub Actions workflow builds the frontend and backend, rebuilds SQLite for Electron, and publishes the installer to [Releases](https://github.com/puspharajm/ps-billing/releases). Local developers can build the same installer on Windows with Node.js 18 or newer by installing the root, frontend, and backend dependencies and running `npm run electron:dist`. The installer contains application code, not the developer's local database.
+The Windows GitHub Actions workflow builds the frontend and backend, rebuilds SQLite for Electron, and publishes the installer to [Releases](https://github.com/puspharajm/ps-billing/releases). Local developers can build the same installer on Windows with Node.js 22 or newer by installing the root, frontend, and backend dependencies and running `npm run electron:dist`. The installer contains application code, not the developer's local database.
 
 ---
 
