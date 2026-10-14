@@ -12,6 +12,17 @@ import {
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+let vercelDatabaseInitialization: Promise<void> | null = null;
+
+function initializeVercelDatabase(): Promise<void> {
+  if (!vercelDatabaseInitialization) {
+    vercelDatabaseInitialization = initializeDatabase().catch((error) => {
+      vercelDatabaseInitialization = null;
+      throw error;
+    });
+  }
+  return vercelDatabaseInitialization;
+}
 
 // Trust Vercel's reverse proxy
 app.set('trust proxy', 1);
@@ -60,6 +71,17 @@ app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
   }
   next();
+});
+
+app.use('/api', async (_req, res, next) => {
+  if (!process.env.VERCEL) return next();
+  try {
+    await initializeVercelDatabase();
+    return next();
+  } catch (error) {
+    console.error('Hosted database initialization failed:', error);
+    return res.status(503).json({ error: 'Database unavailable. Please try again shortly.' });
+  }
 });
 
 const ONLINE_BILLING_API_BASE_URL = 'https://ps-billing-eta.vercel.app/_/backend/api';
@@ -2101,8 +2123,8 @@ if (process.env.ELECTRON) {
     console.error("Database initialization failed", err);
   });
 } else {
-  // Initialize DB asynchronously without blocking module export for Vercel
-  initializeDatabase().catch(err => console.error("Database initialization failed", err));
+  // Initialize asynchronously, while API requests wait for this shared promise.
+  initializeVercelDatabase().catch(err => console.error("Database initialization failed", err));
 }
 
 export default app;
