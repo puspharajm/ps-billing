@@ -52,6 +52,13 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '512kb' }));
 
+app.use((req, _res, next) => {
+  if (req.url === '/_/backend' || req.url.startsWith('/_/backend/')) {
+    req.url = req.url.slice('/_/backend'.length) || '/';
+  }
+  next();
+});
+
 // Log requests
 app.use((req, res, next) => {
   if (process.env.ELECTRON !== '1') {

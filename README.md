@@ -59,6 +59,12 @@ Online company panels and accounts must already exist in the hosted service. In 
 
 For server deployments, configure `DATABASE_URL` or `NEON_DATABASE_URL` as appropriate. Set both `SUPER_ADMIN_USERNAME` and `SUPER_ADMIN_PASSWORD` to create or reset the administrator during database initialization. The optional `DEFAULT_USER_PASSWORD` seeds missing default company-user accounts; it never resets existing user passwords. Store deployment credentials in the hosting provider's secret environment configuration, never in source control.
 
+### Vercel and Neon pull-request branches
+
+The Vercel project uses the `services` configuration in `vercel.json` to deploy the frontend and backend together. In Vercel, set the project's framework preset to **Services** under **Settings > Build and Deployment**, then redeploy.
+
+The `neon-branching.yml` GitHub Actions workflow creates a Neon preview branch for each opened, reopened, or updated pull request and deletes it when the pull request closes. Set `NEON_PROJECT_ID` as a repository Actions variable and `NEON_API_KEY` as a repository Actions secret under **Settings > Secrets and variables > Actions**. Preview branches expire after 14 days. Pull requests from forks cannot access repository secrets, so the workflow cannot create or delete Neon branches for those pull requests.
+
 ## Building the Windows Installer
 
 The Windows GitHub Actions workflow builds the frontend and backend, rebuilds SQLite for Electron, and publishes the installer to [Releases](https://github.com/puspharajm/ps-billing/releases). Local developers can build the same installer on Windows with Node.js 18 or newer by installing the root, frontend, and backend dependencies and running `npm run electron:dist`. The installer contains application code, not the developer's local database.
