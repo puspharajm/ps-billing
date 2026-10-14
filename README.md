@@ -61,7 +61,7 @@ For server deployments, configure `DATABASE_URL` or `NEON_DATABASE_URL` as appro
 
 ### Vercel and Neon pull-request branches
 
-The Vercel project uses the `services` configuration in `vercel.json` to deploy the frontend and backend together. In Vercel, set the project's framework preset to **Services** under **Settings > Build and Deployment**, then redeploy.
+The Vercel project uses the `services` configuration in `vercel.json` to deploy the frontend and backend together. The backend service installs its own locked dependencies and builds its TypeScript entrypoint before deployment. In Vercel, set the project's framework preset to **Services** under **Settings > Build and Deployment**, then redeploy.
 
 The React website includes Vercel Web Analytics. Enable Web Analytics for the project in the Vercel dashboard to view website page views; the desktop app does not send analytics events.
 

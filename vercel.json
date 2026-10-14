@@ -8,7 +8,9 @@
     "backend": {
       "root": "backend/",
       "framework": "express",
-      "entrypoint": "src/index.ts"
+      "installCommand": "npm ci --include=dev",
+      "buildCommand": "npm run build",
+      "entrypoint": "dist/index.js"
     }
   },
   "rewrites": [
