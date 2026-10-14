@@ -11,12 +11,17 @@ interface PublicPanel {
   default_username?: string | null;
 }
 
+const isDesktopApp = new URLSearchParams(window.location.search).has('desktop');
+
 export default function Login() {
   const { login } = useAuth();
   const [panels, setPanels] = useState<PublicPanel[]>([]);
   const [selectedPanel, setSelectedPanel] = useState<PublicPanel | null>(null);
   const [panelsLoading, setPanelsLoading] = useState(true);
   const [panelsError, setPanelsError] = useState('');
+  const [setupRequired, setSetupRequired] = useState(false);
+  const [setupLoading, setSetupLoading] = useState(isDesktopApp);
+  const [setupPasswordConfirmation, setSetupPasswordConfirmation] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -40,11 +45,58 @@ export default function Login() {
       .finally(() => {
         if (active) setPanelsLoading(false);
       });
+
+    if (isDesktopApp) {
+      fetch(`${API_URL}/auth/setup-status`, { cache: 'no-store' })
+        .then(async response => {
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || 'Unable to check administrator setup.');
+          setSetupRequired(data.setupRequired === true);
+        })
+        .catch((setupError: Error) => setPanelsError(setupError.message))
+        .finally(() => setSetupLoading(false));
+    }
+
     return () => { active = false; };
   }, []);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    if (setupRequired) {
+      if (!username.trim()) {
+        setError('Enter a username for the administrator account.');
+        return;
+      }
+      if (password.length < 12) {
+        setError('Choose an administrator password with at least 12 characters.');
+        return;
+      }
+      if (password !== setupPasswordConfirmation) {
+        setError('The passwords do not match.');
+        return;
+      }
+
+      setIsLoading(true);
+      setError('');
+      try {
+        const response = await fetch(`${API_URL}/auth/initial-admin`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Unable to create the administrator account.');
+
+        setSetupRequired(false);
+        const result = await login(username, password);
+        if (!result.success) throw new Error(result.error || 'Administrator account created, but sign-in failed.');
+      } catch (setupError) {
+        setError(setupError instanceof Error ? setupError.message : 'Unable to complete administrator setup.');
+        setIsLoading(false);
+      }
+      return;
+    }
+
     if (!username.trim() || !password) {
       setError('Please enter both username and password.');
       return;
@@ -82,7 +134,11 @@ export default function Login() {
 
           <h2 id="login-panels-title" className="login-section-title">Company panels</h2>
           {panelsError && <p className="login-panel-message" role="alert">{panelsError}</p>}
-          {panelsLoading ? (
+          {setupLoading ? (
+            <p className="login-panel-message" role="status">Checking desktop setup...</p>
+          ) : setupRequired ? (
+            <p className="login-panel-message" role="status">Create your administrator account to initialize this desktop app.</p>
+          ) : panelsLoading ? (
             <p className="login-panel-message" role="status">Loading company panels...</p>
           ) : (
             <div className="login-panel-grid">
@@ -125,10 +181,14 @@ export default function Login() {
 
         <section className="login-card" aria-labelledby="login-form-title">
           <h2 id="login-form-title" className="login-form-title">
-            {selectedPanel ? `Sign in to ${selectedPanel.licensee_name}` : 'Sign in'}
+            {setupRequired
+              ? 'Set up administrator'
+              : selectedPanel ? `Sign in to ${selectedPanel.licensee_name}` : 'Sign in'}
           </h2>
           <p className="login-form-subtitle">
-            {selectedPanel ? selectedPanel.company_name : 'Choose a company panel or sign in as an administrator.'}
+            {setupRequired
+              ? 'Create a private administrator account to initialize your local database.'
+              : selectedPanel ? selectedPanel.company_name : 'Choose a company panel or sign in as an administrator.'}
           </p>
 
           {error && <div className="login-error" role="alert">{error}</div>}
@@ -160,7 +220,7 @@ export default function Login() {
                 <input
                   ref={passwordInputRef}
                   type="password"
-                  autoComplete="current-password"
+                  autoComplete={setupRequired ? 'new-password' : 'current-password'}
                   value={password}
                   onChange={event => setPassword(event.target.value)}
                   disabled={isLoading}
@@ -169,12 +229,32 @@ export default function Login() {
               </span>
             </label>
 
+            {setupRequired && (
+              <label className="login-field">
+                <span>Confirm administrator password</span>
+                <span className="login-input-wrap">
+                  <LockKeyhole size={17} aria-hidden="true" />
+                  <input
+                    type="password"
+                    autoComplete="new-password"
+                    value={setupPasswordConfirmation}
+                    onChange={event => setSetupPasswordConfirmation(event.target.value)}
+                    disabled={isLoading}
+                    minLength={12}
+                    required
+                  />
+                </span>
+              </label>
+            )}
+
             <button type="submit" className="btn btn-primary login-submit" disabled={isLoading}>
-              {isLoading ? 'Signing in...' : 'Sign in securely'}
+              {isLoading
+                ? setupRequired ? 'Creating administrator...' : 'Signing in...'
+                : setupRequired ? 'Create administrator and sign in' : 'Sign in securely'}
             </button>
           </form>
 
-          {selectedPanel && (
+          {!setupRequired && selectedPanel && (
             <button
               type="button"
               className="login-admin-mode"

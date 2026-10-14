@@ -45,69 +45,23 @@ Engineered with a robust multi-tenant architecture and a highly polished "classi
 
 ---
 
-## 🚀 Getting Started
+## Downloads and Project Links
 
-### Prerequisites
-- Node.js (v18 or higher)
-- npm or yarn
+- **Windows desktop installer and release history:** [Releases](https://github.com/puspharajm/ps-billing/releases)
+- **GitHub Packages:** [Packages](https://github.com/users/puspharajm/packages?repo_name=ps-billing)
+- **Latest installer:** [Download the Windows installer](https://github.com/puspharajm/ps-billing/releases/latest)
 
-### 1. Installation
-Clone the repository and install dependencies for both the frontend and backend microservices:
+## Desktop App and Data
 
-```bash
-git clone https://github.com/puspharajm/ps-billing.git
-cd ps-billing
+Download and run the Windows installer from the latest release. On first launch, create an administrator username and a unique password of at least 12 characters. The desktop app initializes its SQLite database automatically in `%APPDATA%\SMR Groups Billing`; customer, invoice, inventory, and account data are stored in that Windows user profile. The installer contains no developer or customer database.
 
-# Install Backend dependencies
-cd backend
-npm install
+After signing in as administrator, create company-user accounts and assign each to its licensee from the admin panel. Company panels appear on the sign-in screen once their user accounts have been configured. Keep regular backups of the user-data folder.
 
-# Install Frontend dependencies
-cd ../frontend
-npm install
-```
+For server deployments, configure `DATABASE_URL` or `NEON_DATABASE_URL` as appropriate. Set both `SUPER_ADMIN_USERNAME` and `SUPER_ADMIN_PASSWORD` to create or reset the administrator during database initialization. The optional `DEFAULT_USER_PASSWORD` seeds missing default company-user accounts; it never resets existing user passwords. Store deployment credentials in the hosting provider's secret environment configuration, never in source control.
 
-### 2. Environment Configuration
-Create a `.env` file in the `backend` directory to configure the Cloud Backup engine:
+## Building the Windows Installer
 
-```env
-# backend/.env
-PORT=5000
-NEON_DATABASE_URL=postgresql://<user>:<password>@<host>/<dbname>?sslmode=require&channel_binding=require
-SUPER_ADMIN_USERNAME=admin
-SUPER_ADMIN_PASSWORD=<unique-strong-password>
-DEFAULT_USER_PASSWORD=<unique-initial-company-user-password>
-```
-
-Both administrator variables are required together to create or reset the administrator account. The company-user password is optional and is used only when seeding missing default company accounts; existing account passwords are never reset during startup. Without these values, the corresponding accounts are not seeded. Keep `.env` private and never commit it.
-
-### 3. Running the Application
-
-**Start the Backend Server (Port 5000):**
-```bash
-cd backend
-npm run dev
-```
-
-**Start the Frontend Development Server:**
-```bash
-cd frontend
-npm run dev
-```
-
-Navigate to `http://localhost:5173` in your browser to access the system.
-
-### 4. Build the Windows Desktop App
-
-From the repository root, install the root, frontend, and backend dependencies, then run:
-
-```bash
-npm run electron:dist
-```
-
-This builds the frontend and backend, rebuilds SQLite for Electron in an isolated staging folder, and creates a Windows installer in `dist/`. The installed desktop app runs its API locally, uses SQLite without requiring a cloud connection, and stores its databases in the current Windows user's `%APPDATA%\SMR Groups Billing` folder. Existing development databases are not included in the installer.
-
-The packaged desktop app inherits account-bootstrap variables from its launching process. Configure `SUPER_ADMIN_USERNAME` and `SUPER_ADMIN_PASSWORD` before its first launch to create an administrator; configure `DEFAULT_USER_PASSWORD` as well to seed the default company accounts. Without these values, those accounts are not created.
+The Windows GitHub Actions workflow builds the frontend and backend, rebuilds SQLite for Electron, and publishes the installer to [Releases](https://github.com/puspharajm/ps-billing/releases). Local developers can build the same installer on Windows with Node.js 18 or newer by installing the root, frontend, and backend dependencies and running `npm run electron:dist`. The installer contains application code, not the developer's local database.
 
 ---
 

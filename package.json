@@ -1,6 +1,6 @@
 {
   "name": "smr-groups-billing",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "SMR Groups Billing Software — Unified launcher for backend and frontend",
   "main": "main.js",
   "scripts": {

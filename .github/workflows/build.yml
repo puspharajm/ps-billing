@@ -36,11 +36,11 @@ jobs:
       - name: Install dependencies and build
         shell: pwsh
         run: |
-          npm install
+          npm ci
           Set-Location frontend
-          npm install
+          npm ci
           Set-Location ..\backend
-          npm install
+          npm ci
           Set-Location ..
           npm run build:all
 
@@ -85,7 +85,7 @@ jobs:
           Write-Host "Creating release $env:TAG and uploading $($exeFile.Name) ..."
           gh release create $env:TAG "$($exeFile.FullName)" `
             --title "SMR Groups Billing System v$env:VERSION" `
-            --notes "Desktop installer for SMR Groups Billing System v$env:VERSION`n`nDownload the .exe file below to install." `
+            --notes "Desktop installer for SMR Groups Billing System v$env:VERSION`n`nDownload the Windows installer below. On first launch, create your administrator account. The app creates its SQLite database in your Windows user profile and keeps company data local to this PC." `
             --latest
 
           if ($LASTEXITCODE -ne 0) {

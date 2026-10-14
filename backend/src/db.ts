@@ -47,6 +47,30 @@ let pgPool: Pool;
 
 export const tenantContext = new AsyncLocalStorage<sqlite3.Database | string>();
 const tenantDbs = new Map<string, sqlite3.Database | string>();
+const tenantDbInitializations = new Map<string, Promise<sqlite3.Database | string>>();
+
+async function getOrInitializeTenantDb(
+  key: string,
+  initialize: () => Promise<sqlite3.Database | string>
+): Promise<sqlite3.Database | string> {
+  const pending = tenantDbInitializations.get(key);
+  if (pending) return pending;
+
+  const existing = tenantDbs.get(key);
+  if (existing) return existing;
+
+  const initialization = initialize();
+  tenantDbInitializations.set(key, initialization);
+  try {
+    const db = await initialization;
+    tenantDbs.set(key, db);
+    return db;
+  } finally {
+    if (tenantDbInitializations.get(key) === initialization) {
+      tenantDbInitializations.delete(key);
+    }
+  }
+}
 
 // SQLite Helpers
 function initSqliteMaster() {
@@ -475,6 +499,14 @@ export async function initializeDatabase() {
     `);
   }
 
+  const tradingLicensee = await get<any>("SELECT * FROM licensees WHERE license_number = 'LIC-SMRTRADING'");
+  if (!tradingLicensee) {
+    await run(`
+      INSERT INTO licensees (license_number, company_name, licensee_name)
+      VALUES ('LIC-SMRTRADING', 'SMR TRADING AND COMPANY', 'SMR Trading and Company')
+    `);
+  }
+
   const defaultUserPassword = process.env.DEFAULT_USER_PASSWORD;
   if (defaultUserPassword) {
     const defaultAccounts = [
@@ -514,48 +546,44 @@ export async function getTenantDb(userId: number): Promise<sqlite3.Database | st
   const schemaName = `tenant_${safeId}`;
   
   if (isOnline) {
-    if (tenantDbs.has(schemaName)) {
-      return tenantDbs.get(schemaName)!;
-    }
+    return getOrInitializeTenantDb(schemaName, async () => {
+      if (!pgPool) throw new Error("Database not initialized. Ensure DATABASE_URL is set.");
+      const client = await pgPool.connect();
+      try {
+        await client.query(`CREATE SCHEMA IF NOT EXISTS "${schemaName}"`);
+        await new Promise<void>((resolve, reject) => {
+          tenantContext.run(schemaName, async () => {
+            try {
+              const tableCheck = await get<{ count: number | string }>(`
+                SELECT count(*) as count
+                FROM information_schema.tables
+                WHERE table_schema = ? AND table_name = 'settings'
+              `, [schemaName]);
 
-    if (!pgPool) throw new Error("Database not initialized. Ensure DATABASE_URL is set.");
-    const client = await pgPool.connect();
-    try {
-      await client.query(`CREATE SCHEMA IF NOT EXISTS "${schemaName}"`);
-      tenantDbs.set(schemaName, schemaName);
+              const isNew = parseInt((tableCheck?.count || 0).toString()) === 0;
 
-      await new Promise<void>((resolve, reject) => {
-        tenantContext.run(schemaName, async () => {
-          try {
-            const tableCheck = await get<{ count: number | string }>(`
-              SELECT count(*) as count 
-              FROM information_schema.tables 
-              WHERE table_schema = ? AND table_name = 'settings'
-            `, [schemaName]);
-            
-            const isNew = parseInt((tableCheck?.count || 0).toString()) === 0;
-            
-            if (isNew) {
-              await initializeTenantDatabase();
-            } else {
-              await migrateTenantDatabase();
+              if (isNew) {
+                await initializeTenantDatabase();
+              } else {
+                await migrateTenantDatabase();
+              }
+              resolve();
+            } catch (err) {
+              reject(err);
             }
-            resolve();
-          } catch (err) {
-            reject(err);
-          }
+          });
         });
-      });
-      return schemaName;
-    } finally {
-      client.release();
-    }
+        return schemaName;
+      } finally {
+        client.release();
+      }
+    });
   } else {
     // Untaint the filename using a strict regex
     if (!/^billing_tenant_[a-f0-9]{32}\.sqlite$/.test(dbName)) {
       throw new Error("Invalid database filename pattern");
     }
-    
+
     const basePath = path.normalize(DB_BASE);
     const fullPath = path.normalize(path.join(basePath, dbName));
     
@@ -563,37 +591,67 @@ export async function getTenantDb(userId: number): Promise<sqlite3.Database | st
       throw new Error("Invalid path specified for tenant database");
     }
     
-    if (tenantDbs.has(dbName)) {
-      return tenantDbs.get(dbName)! as sqlite3.Database;
-    }
+    return getOrInitializeTenantDb(dbName, async () => {
+      const tDb = new sqlite3.Database(fullPath);
 
-    const tDb = new sqlite3.Database(fullPath);
-    
-    tDb.serialize(() => {
-      tDb.run("PRAGMA foreign_keys = ON;");
-    });
-
-    tenantDbs.set(dbName, tDb);
-
-    await new Promise<void>((resolve, reject) => {
-      tenantContext.run(tDb, async () => {
-        try {
-          const tableCheck = await get<{ count: number }>("SELECT count(*) as count FROM sqlite_master WHERE type='table' AND name='settings'");
-          const isNew = !tableCheck || tableCheck.count === 0;
-          
-          if (isNew) {
-            await initializeTenantDatabase();
-          } else {
-            await migrateTenantDatabase();
-          }
-          resolve();
-        } catch (err) {
-          reject(err);
-        }
+      tDb.serialize(() => {
+        tDb.run("PRAGMA foreign_keys = ON;");
       });
-    });
 
-    return tDb;
+      try {
+        await new Promise<void>((resolve, reject) => {
+          tenantContext.run(tDb, async () => {
+            try {
+              const tableCheck = await get<{ count: number }>("SELECT count(*) as count FROM sqlite_master WHERE type='table' AND name='settings'");
+              const isNew = !tableCheck || tableCheck.count === 0;
+
+              if (isNew) {
+                await initializeTenantDatabase();
+              } else {
+                await migrateTenantDatabase();
+              }
+              resolve();
+            } catch (err) {
+              reject(err);
+            }
+          });
+        });
+        return tDb;
+      } catch (err) {
+        await new Promise<void>((resolve) => {
+          tDb.close((closeErr) => {
+            if (closeErr) console.error('Failed to close uninitialized tenant database:', closeErr);
+            resolve();
+          });
+        });
+        throw err;
+      }
+    });
+  }
+}
+
+async function ensureTenantCustomSections() {
+  await run(`
+    CREATE TABLE IF NOT EXISTS custom_sections (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT UNIQUE NOT NULL,
+      slug TEXT UNIQUE NOT NULL,
+      icon TEXT DEFAULT 'FileText',
+      color TEXT DEFAULT '#6366f1',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  const defaultSections = [
+    { name: 'Purchase Order', slug: 'purchase-order', icon: 'ShoppingCart', color: '#f59e0b' },
+    { name: 'Proforma Invoice', slug: 'proforma-invoice', icon: 'FileText', color: '#3b82f6' },
+    { name: 'Sales Order', slug: 'sales-order', icon: 'TrendingUp', color: '#10b981' },
+  ];
+  for (const section of defaultSections) {
+    await run(
+      'INSERT OR IGNORE INTO custom_sections (name, slug, icon, color) VALUES (?, ?, ?, ?)',
+      [section.name, section.slug, section.icon, section.color]
+    );
   }
 }
 
@@ -763,37 +821,13 @@ export async function initializeTenantDatabase() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  await ensureTenantCustomSections();
 }
 
 export async function migrateTenantDatabase() {
   console.log("Running migrations for Tenant database...");
-
-  // 8. Custom document sections (Proforma Invoice, Sales Order, Purchase Order, etc.)
-  await run(`
-    CREATE TABLE IF NOT EXISTS custom_sections (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT UNIQUE NOT NULL,
-      slug TEXT UNIQUE NOT NULL,
-      icon TEXT DEFAULT 'FileText',
-      color TEXT DEFAULT '#6366f1',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  // Pre-seed the three classic sections so they appear on first login
-  const defaultSections = [
-    { name: 'Purchase Order', slug: 'purchase-order', icon: 'ShoppingCart', color: '#f59e0b' },
-    { name: 'Proforma Invoice', slug: 'proforma-invoice', icon: 'FileText', color: '#3b82f6' },
-    { name: 'Sales Order', slug: 'sales-order', icon: 'TrendingUp', color: '#10b981' },
-  ];
-  for (const sec of defaultSections) {
-    try {
-      await run(
-        `INSERT OR IGNORE INTO custom_sections (name, slug, icon, color) VALUES (?, ?, ?, ?)`,
-        [sec.name, sec.slug, sec.icon, sec.color]
-      );
-    } catch (_) { /* ignore */ }
-  }
+  await ensureTenantCustomSections();
 
   // Safe migrations for existing databases
   const safeMigrations = [

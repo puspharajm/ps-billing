@@ -23,16 +23,56 @@ export const BasicWelcome: React.FC<BasicWelcomeProps> = ({ settings }) => {
   const isPondy = user?.username === 'smrpondy' || settings?.company_name?.toLowerCase().includes('pondy');
   const isTrading = user?.username === 'SMR Trading and Company Pondy' || user?.username === 'smrtrading' || settings?.company_name?.toLowerCase().includes('trading');
   
-  const isSuperAdmin = user?.role === 'admin' && user?.license_number === 'Admin';
+  const isAdmin = user?.role === 'admin';
+  const isCreatorProfile = user?.username.toLowerCase() === 'puspharaj.m2003@gmail.com';
+  const notificationsPanel = isAdmin && (
+    <>
+      <h3 style={{ margin: '1rem 0 0.4rem 0', fontSize: '0.82rem', fontWeight: 'bold', color: '#303030' }}>
+        {t('LIVE SYSTEM NOTIFICATIONS')}
+      </h3>
+      <div className="classic-bevel-in" style={{ width: '100%', height: '180px', overflowY: 'auto', background: '#fff', padding: '0', border: '1px solid #808080', fontSize: '0.8rem' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead style={{ position: 'sticky', top: 0, background: '#d4d0c8', zIndex: 1 }}>
+            <tr>
+              <th style={{ textAlign: 'left', padding: '4px 8px', borderBottom: '1px solid #808080', borderRight: '1px solid #c0c0c0', width: '130px' }}>{t('Timestamp')}</th>
+              <th style={{ textAlign: 'left', padding: '4px 8px', borderBottom: '1px solid #808080', borderRight: '1px solid #c0c0c0', width: '150px' }}>{t('Tenant / User')}</th>
+              <th style={{ textAlign: 'left', padding: '4px 8px', borderBottom: '1px solid #808080' }}>{t('Event Details')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {notifications.length === 0 ? (
+              <tr>
+                <td colSpan={3} style={{ padding: '8px', fontStyle: 'italic', color: '#666' }}>{t('No recent notifications.')}</td>
+              </tr>
+            ) : (
+              notifications.map(n => (
+                <tr key={n.id} style={{ borderBottom: '1px solid #e0e0e0' }}>
+                  <td style={{ padding: '4px 8px', color: '#666', borderRight: '1px solid #e0e0e0' }}>
+                    {new Date(n.created_at).toLocaleString()}
+                  </td>
+                  <td style={{ padding: '4px 8px', fontWeight: 'bold', color: '#000080', borderRight: '1px solid #e0e0e0' }}>
+                    {n.tenant_name} ({n.username})
+                  </td>
+                  <td style={{ padding: '4px 8px' }}>
+                    <strong style={{ color: '#800000' }}>[{n.action}]</strong> {n.details}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
 
   useEffect(() => {
-    if (isSuperAdmin) {
+    if (isAdmin) {
       authFetch(`${API_URL}/admin/notifications`)
         .then(res => res.ok ? res.json() : [])
         .then(data => setNotifications(Array.isArray(data) ? data : []))
         .catch(err => console.error("Failed to fetch notifications:", err));
     }
-  }, [isSuperAdmin, authFetch]);
+  }, [isAdmin, authFetch]);
 
   // Check if profile is incomplete or still using default PS Robotix placeholder (unless Pondy tenant)
   const isProfileIncomplete = !settings?.company_name ||
@@ -52,7 +92,7 @@ export const BasicWelcome: React.FC<BasicWelcomeProps> = ({ settings }) => {
     <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1.2rem', alignItems: 'center' }}>
       
       {/* Dynamic Profile Verification & Seeding Alert */}
-      {isProfileIncomplete && (
+      {!isAdmin && isProfileIncomplete && (
         <div className="classic-bevel-out" style={{ 
           width: '100%', 
           maxWidth: '850px', 
@@ -115,10 +155,15 @@ export const BasicWelcome: React.FC<BasicWelcomeProps> = ({ settings }) => {
             overflow: 'hidden',
             flexShrink: 0
           }}>
-            {isSuperAdmin ? (
+            {isCreatorProfile ? (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', background: '#000000', color: '#ffcc00', fontWeight: 'bold' }}>
                 <span style={{ fontSize: '1.1rem', letterSpacing: '1px' }}>{t('ADMIN')}</span>
                 <span style={{ fontSize: '0.55rem', background: '#333', padding: '1px 3px', marginTop: '1px', color: '#fff' }}>{t('CREATOR')}</span>
+              </div>
+            ) : isAdmin ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', background: '#000000', color: '#ffffff', fontWeight: 'bold' }}>
+                <span style={{ fontSize: '1.1rem', letterSpacing: '1px' }}>{t('ADMIN')}</span>
+                <span style={{ fontSize: '0.55rem', background: '#333', padding: '1px 3px', marginTop: '1px' }}>{t('CONSOLE')}</span>
               </div>
             ) : isGroups ? (
               <img src="/logo.jpg" alt="SMR Groups" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -149,21 +194,21 @@ export const BasicWelcome: React.FC<BasicWelcomeProps> = ({ settings }) => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
             <h1 style={{ 
               margin: 0, 
-              color: isSuperAdmin ? 'var(--classic-text-blue, #000080)' : 'var(--classic-text-red, #800000)', 
+              color: isCreatorProfile ? 'var(--classic-text-blue, #000080)' : 'var(--classic-text-red, #800000)',
               fontFamily: '"Times New Roman", Times, serif', 
               fontWeight: 'bold', 
               fontSize: '2rem',
               lineHeight: '1.1'
             }}>
-              {isSuperAdmin ? t('SMR Matrix Workstation') : settings.company_name}
+              {isCreatorProfile ? t('SMR Matrix Workstation') : isAdmin ? t('Administrator Console') : settings.company_name}
             </h1>
-            <p style={{ margin: 0, color: isSuperAdmin ? '#505050' : 'var(--classic-text-blue, #000080)', fontWeight: 'bold', fontSize: '0.85rem' }}>
-              {isSuperAdmin ? t('Super-Admin Control & Diagnostics Console') : t('Advanced Enterprise Inventory & Automated Billing Console')}
+            <p style={{ margin: 0, color: isCreatorProfile ? '#505050' : 'var(--classic-text-blue, #000080)', fontWeight: 'bold', fontSize: '0.85rem' }}>
+              {isCreatorProfile ? t('Super-Admin Control & Diagnostics Console') : isAdmin ? t('Manage company accounts and application settings') : t('Advanced Enterprise Inventory & Automated Billing Console')}
             </p>
           </div>
         </div>
 
-        {isSuperAdmin ? (
+        {isCreatorProfile ? (
           <>
             {/* Creator Profile Matrix */}
             <h3 style={{ margin: '0 0 0.4rem 0', fontSize: '0.82rem', fontWeight: 'bold', color: '#303030' }}>
@@ -213,7 +258,7 @@ export const BasicWelcome: React.FC<BasicWelcomeProps> = ({ settings }) => {
                 <tr>
                   <td style={{ width: '160px', background: '#000080', color: '#fff', padding: '5px 8px', fontWeight: 'bold', border: '1px solid #c0c0c0' }}>{t('Core Engine')}</td>
                   <td className="classic-bevel-in" style={{ padding: '5px 8px', background: '#fff', border: '1px solid #808080' }}>
-                    {t('Seychelles Matrix v1.0.1')}
+                    {t('SMR Groups Billing v1.2.2')}
                   </td>
                   <td style={{ width: '150px', background: '#000080', color: '#fff', padding: '5px 8px', fontWeight: 'bold', border: '1px solid #c0c0c0' }}>{t('Database Driver')}</td>
                   <td className="classic-bevel-in" style={{ padding: '5px 8px', background: '#fff', border: '1px solid #808080', fontWeight: 'bold', color: '#008000' }}>
@@ -229,45 +274,20 @@ export const BasicWelcome: React.FC<BasicWelcomeProps> = ({ settings }) => {
               </tbody>
             </table>
 
-            {/* Live System Notifications */}
-            <h3 style={{ margin: '1rem 0 0.4rem 0', fontSize: '0.82rem', fontWeight: 'bold', color: '#303030' }}>
-              {t('Ⅲ. LIVE SYSTEM NOTIFICATIONS')}
-            </h3>
-            
-            <div className="classic-bevel-in" style={{ width: '100%', height: '180px', overflowY: 'auto', background: '#fff', padding: '0', border: '1px solid #808080', fontSize: '0.8rem' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead style={{ position: 'sticky', top: 0, background: '#d4d0c8', zIndex: 1 }}>
-                  <tr>
-                    <th style={{ textAlign: 'left', padding: '4px 8px', borderBottom: '1px solid #808080', borderRight: '1px solid #c0c0c0', width: '130px' }}>{t('Timestamp')}</th>
-                    <th style={{ textAlign: 'left', padding: '4px 8px', borderBottom: '1px solid #808080', borderRight: '1px solid #c0c0c0', width: '150px' }}>{t('Tenant / User')}</th>
-                    <th style={{ textAlign: 'left', padding: '4px 8px', borderBottom: '1px solid #808080' }}>{t('Event Details')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {notifications.length === 0 ? (
-                    <tr>
-                      <td colSpan={3} style={{ padding: '8px', fontStyle: 'italic', color: '#666' }}>{t('No recent notifications.')}</td>
-                    </tr>
-                  ) : (
-                    notifications.map(n => (
-                      <tr key={n.id} style={{ borderBottom: '1px solid #e0e0e0' }}>
-                        <td style={{ padding: '4px 8px', color: '#666', borderRight: '1px solid #e0e0e0' }}>
-                          {new Date(n.created_at).toLocaleString()}
-                        </td>
-                        <td style={{ padding: '4px 8px', fontWeight: 'bold', color: '#000080', borderRight: '1px solid #e0e0e0' }}>
-                          {n.tenant_name} ({n.username})
-                        </td>
-                        <td style={{ padding: '4px 8px' }}>
-                          <strong style={{ color: '#800000' }}>[{n.action}]</strong> {n.details}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
           </>
+        ) : isAdmin ? (
+          <div style={{ fontSize: '0.9rem', lineHeight: '1.5' }}>
+            <h3 style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', color: '#303030' }}>{t('ADMINISTRATOR OVERVIEW')}</h3>
+            <p>{t('Welcome,')} <strong>{user?.username}</strong>. {t('Use the Admin panel to create company accounts and assign them to company panels.')}</p>
+            <p>{t('After creating a company account, sign in through its company panel to configure business details and start using billing features.')}</p>
+            <button
+              className="classic-btn"
+              onClick={() => navigate('/admin')}
+              style={{ padding: '4px 12px', fontFamily: 'monospace', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              {t('OPEN ADMIN PANEL')}
+            </button>
+          </div>
         ) : (
           <>
         {/* Matrix Grid (Properties Sheet style) */}
@@ -345,13 +365,14 @@ export const BasicWelcome: React.FC<BasicWelcomeProps> = ({ settings }) => {
         </table>
           </>
         )}
+        {notificationsPanel}
 
       </div>
       
       {/* Footer copyright stamp */}
       <div style={{ fontSize: '0.7rem', color: '#505050', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', marginTop: '0.3rem' }}>
-        <span>{t('PS - Billing Console v1.0.1 • Seychelles Matrix Engine • Licensed for Offline Production')}</span>
-        <span>{t('Designed and Developed by Puspharaj M. Visakhapatnam / Puducherry, India.')}</span>
+        <span>{t('SMR Groups Billing v1.2.2 • Local SQLite Database • Offline Ready')}</span>
+        <span>{t('Classic billing and inventory management for your business.')}</span>
       </div>
 
     </div>

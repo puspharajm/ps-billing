@@ -66,11 +66,13 @@ app.use((req, res, next) => {
 app.use(async (req: any, res, next) => {
   const p = req.path || '';
   const isLoginPath = p === '/api/auth/login' || p.endsWith('/api/auth/login');
+  const isDesktopSetupPath = ['/api/auth/setup-status', '/api/auth/initial-admin']
+    .some((setupPath) => p === setupPath || p.endsWith(setupPath));
   const isHealthPath = p === '/api/health' || p.endsWith('/api/health');
   const isPublicPanelsPath = p === '/api/public/panels' || p.endsWith('/api/public/panels');
 
   // Public routes that don't require authentication
-  if (isLoginPath || isHealthPath || isPublicPanelsPath) {
+  if (isLoginPath || isDesktopSetupPath || isHealthPath || isPublicPanelsPath) {
     return next();
   }
 
@@ -151,7 +153,7 @@ app.get('/api/health', async (req, res) => {
       status: 'ok',
       mode: process.env.VERCEL ? 'vercel-postgres' : (process.env.USE_NEON === 'true' ? 'neon-postgres' : 'sqlite'),
       timestamp: new Date().toISOString(),
-      version: '1.0.2',
+      version: '1.2.2',
     });
   } catch (err: any) {
     res.status(503).json({
@@ -308,6 +310,71 @@ app.delete('/api/admin/licensees/:id', requireAdmin, async (req: any, res: any) 
 // ==========================================
 // 0. AUTHENTICATION ENDPOINTS
 // ==========================================
+let initialAdminSetupInProgress = false;
+
+app.get('/api/auth/setup-status', async (_req, res) => {
+  if (process.env.ELECTRON !== '1') {
+    return res.status(404).json({ error: 'Desktop setup is only available in the desktop app.' });
+  }
+
+  try {
+    const adminCount = await get<{ count: number | string }>(
+      "SELECT COUNT(*) as count FROM users WHERE role = 'admin'"
+    );
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ setupRequired: Number(adminCount?.count || 0) === 0 });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Unable to check administrator setup.' });
+  }
+});
+
+app.post('/api/auth/initial-admin', async (req, res) => {
+  if (process.env.ELECTRON !== '1') {
+    return res.status(404).json({ error: 'Desktop setup is only available in the desktop app.' });
+  }
+  if (initialAdminSetupInProgress) {
+    return res.status(409).json({ error: 'Administrator setup is already in progress.' });
+  }
+
+  initialAdminSetupInProgress = true;
+  try {
+    const username = typeof req.body.username === 'string' ? req.body.username.trim() : '';
+    const password = typeof req.body.password === 'string' ? req.body.password : '';
+    if (username.length < 3 || username.length > 100 || !password) {
+      return res.status(400).json({ error: 'Enter a username (3–100 characters) and a password.' });
+    }
+    if (password.length < 12 || password.length > 256) {
+      return res.status(400).json({ error: 'Choose an administrator password with at least 12 characters.' });
+    }
+
+    const existingAdmin = await get<{ id: number }>(
+      "SELECT id FROM users WHERE role = 'admin' LIMIT 1"
+    );
+    if (existingAdmin) {
+      return res.status(409).json({ error: 'An administrator is already configured. Sign in instead.' });
+    }
+
+    const existingUsername = await get<{ id: number }>(
+      'SELECT id FROM users WHERE LOWER(username) = LOWER(?)',
+      [username]
+    );
+    if (existingUsername) {
+      return res.status(409).json({ error: 'That username already exists. Choose another one.' });
+    }
+
+    const { hash, salt } = hashPassword(password);
+    await runGlobal(
+      "INSERT INTO users (username, password_hash, salt, role, license_number) VALUES (?, ?, ?, 'admin', 'Admin')",
+      [username, hash, salt]
+    );
+    res.status(201).json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Unable to create the administrator account.' });
+  } finally {
+    initialAdminSetupInProgress = false;
+  }
+});
+
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password, panel_id: panelId } = req.body;

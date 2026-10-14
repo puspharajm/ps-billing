@@ -128,7 +128,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
-  const isSuperAdmin = user?.role === 'admin' && user.username.toLowerCase() === 'puspharaj.m2003@gmail.com';
+  const isSuperAdmin = user?.role === 'admin';
 
   return (
     <AuthContext.Provider value={{
