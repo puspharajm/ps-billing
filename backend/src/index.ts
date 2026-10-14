@@ -9,7 +9,6 @@ import {
 import { 
   CompanySettings, Customer, Supplier, Item, Invoice, InvoiceItem, Payment, User, Session 
 } from './types';
-import { runBackup } from './backup';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -266,6 +265,7 @@ app.post('/api/shutdown', (req, res) => {
 // ==========================================
 app.post('/api/admin/backup/trigger', requireAdmin, async (req: any, res: any) => {
   try {
+    const { runBackup } = await import('./backup.js');
     const result = await runBackup();
     res.json(result);
   } catch (error: any) {
