@@ -28,9 +28,6 @@ const allowedOrigins = new Set([
   'http://127.0.0.1:5174',
   'http://localhost:5175',
   'http://127.0.0.1:5175',
-  'https://ps-billing-git-main-puspharaj.vercel.app',
-  'https://ps-billing.vercel.app',
-  'https://ps-billing-qsiwkjdul-puspharaj.vercel.app'
 ]);
 
 app.use(cors({
@@ -42,8 +39,7 @@ app.use(cors({
     const isDesktopLocalOrigin = process.env.ELECTRON === '1'
       && /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
 
-    // Allow all vercel.app subdomains (covers preview deployments)
-    if (origin.endsWith('.vercel.app') || allowedOrigins.has(origin) || isAllowedLocalDevOrigin || isDesktopLocalOrigin) {
+    if (allowedOrigins.has(origin) || isAllowedLocalDevOrigin || isDesktopLocalOrigin) {
       return callback(null, true);
     }
     callback(new Error('Not allowed by CORS'));

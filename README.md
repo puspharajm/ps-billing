@@ -53,17 +53,15 @@ Engineered with a robust multi-tenant architecture and a highly polished "classi
 
 ## Desktop App and Data
 
-The desktop app starts in **Shared online data** mode and uses [the hosted billing service](https://ps-billing-eta.vercel.app/) for sign-in, company panels, customers, inventory, invoices, and other business data. An internet connection and an existing hosted account are required. Select **Local data (this PC)** on the sign-in screen to use a separate offline SQLite database; its data does not sync with online data. First launch in local mode asks you to create a local administrator username and a unique password of at least 12 characters. The installer contains no developer or customer database.
+The desktop app distributed through [GitHub Releases](https://github.com/puspharajm/ps-billing/releases) starts in **Shared online data** mode and uses the hosted API at [ps-billing-eta.vercel.app](https://ps-billing-eta.vercel.app/_/backend/api/health) for sign-in, company panels, customers, inventory, invoices, and other business data. Vercel runs the API only; Neon PostgreSQL is the persistent store for shared data. GitHub is the source for application code and desktop releases. An internet connection and an existing hosted account are required. Select **Local data (this PC)** on the sign-in screen to use a separate offline SQLite database; its data does not sync with online data. First launch in local mode asks you to create a local administrator username and a unique password of at least 12 characters. The installer contains no developer or customer database.
 
 Online company panels and accounts must already exist in the hosted service. In local mode, create local company-user accounts and assign each to its licensee from the admin panel. Company panels appear on the sign-in screen once their user accounts have been configured. Keep regular backups of the local user-data folder.
 
 For server deployments, configure `DATABASE_URL` or `NEON_DATABASE_URL` as appropriate. Set both `SUPER_ADMIN_USERNAME` and `SUPER_ADMIN_PASSWORD` to create or reset the administrator during database initialization. The optional `DEFAULT_USER_PASSWORD` seeds missing default company-user accounts; it never resets existing user passwords. Store deployment credentials in the hosting provider's secret environment configuration, never in source control.
 
-### Vercel and Neon pull-request branches
+### Hosted API and Neon database
 
-The Vercel project uses the `services` configuration in `vercel.json` to deploy the frontend and backend together. The backend service installs its locked dependencies, type-checks the TypeScript, and bundles the server entrypoint before deployment. Configure a valid `DATABASE_URL` or `NEON_DATABASE_URL` in Vercel; the hosted service requires persistent Postgres and will not fall back to ephemeral SQLite. In Vercel, set the project's framework preset to **Services** under **Settings > Build and Deployment**, then redeploy.
-
-The React website includes Vercel Web Analytics. Enable Web Analytics for the project in the Vercel dashboard to view website page views; the desktop app does not send analytics events.
+Vercel serves only the backend API; it does not host the React frontend or store application records. The backend is built from the GitHub repository using the `backend` service in `vercel.json`. Configure a valid `DATABASE_URL` or `NEON_DATABASE_URL` in Vercel, pointing to the Neon PostgreSQL database. The hosted API requires persistent Postgres and will not fall back to ephemeral SQLite. Keep database credentials in Vercel environment variables and never commit them to GitHub.
 
 The `neon-branching.yml` GitHub Actions workflow creates a Neon preview branch for each opened, reopened, or updated pull request and deletes it when the pull request closes. Set `NEON_PROJECT_ID` as a repository Actions variable and `NEON_API_KEY` as a repository Actions secret under **Settings > Secrets and variables > Actions**. Preview branches expire after 14 days. Pull requests from forks cannot access repository secrets, so the workflow cannot create or delete Neon branches for those pull requests.
 
