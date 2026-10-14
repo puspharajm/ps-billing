@@ -242,7 +242,7 @@ export const BasicWelcome: React.FC<BasicWelcomeProps> = ({ settings }) => {
                 <tr>
                   <td style={{ background: '#000080', color: '#fff', padding: '5px 8px', fontWeight: 'bold', border: '1px solid #c0c0c0' }}>{t('Location')}</td>
                   <td className="classic-bevel-in" colSpan={3} style={{ padding: '5px 8px', background: '#fff', border: '1px solid #808080', fontStyle: 'italic' }}>
-                    {t('Visakhapatnam / Puducherry, India')}
+                    {t('Puducherry, India')}
                   </td>
                 </tr>
               </tbody>
@@ -258,7 +258,7 @@ export const BasicWelcome: React.FC<BasicWelcomeProps> = ({ settings }) => {
                 <tr>
                   <td style={{ width: '160px', background: '#000080', color: '#fff', padding: '5px 8px', fontWeight: 'bold', border: '1px solid #c0c0c0' }}>{t('Core Engine')}</td>
                   <td className="classic-bevel-in" style={{ padding: '5px 8px', background: '#fff', border: '1px solid #808080' }}>
-                    {t('SMR Groups Billing v1.2.4')}
+                    {t('PS Matrix')}
                   </td>
                   <td style={{ width: '150px', background: '#000080', color: '#fff', padding: '5px 8px', fontWeight: 'bold', border: '1px solid #c0c0c0' }}>{t('Database Driver')}</td>
                   <td className="classic-bevel-in" style={{ padding: '5px 8px', background: '#fff', border: '1px solid #808080', fontWeight: 'bold', color: '#008000' }}>
