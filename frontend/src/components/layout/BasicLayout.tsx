@@ -415,7 +415,7 @@ export const BasicLayout: React.FC<BasicLayoutProps> = ({ onSwitchUi, onLogout, 
         userSelect: 'none'
       }}>
         <span>{t(`Licencee : ${user?.license_number === 'Admin' ? 'Admin' : (user?.licensee_company_name || 'SMR TRADING AND COMPANY')}`)}</span>
-        <span>{t('SMR Groups Billing • Local Desktop Edition')}</span>
+        <span>{t('SMR Groups Billing • Desktop Edition')}</span>
       </footer>
 
     </div>

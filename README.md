@@ -53,9 +53,9 @@ Engineered with a robust multi-tenant architecture and a highly polished "classi
 
 ## Desktop App and Data
 
-Download and run the Windows installer from the latest release. On first launch, create an administrator username and a unique password of at least 12 characters. The desktop app initializes its SQLite database automatically in `%APPDATA%\SMR Groups Billing`; customer, invoice, inventory, and account data are stored in that Windows user profile. The installer contains no developer or customer database.
+The desktop app starts in **Shared online data** mode and uses the hosted billing service for sign-in, company panels, customers, inventory, invoices, and other business data. An internet connection and an existing hosted account are required. Select **Local data (this PC)** on the sign-in screen to use a separate offline SQLite database; its data does not sync with online data. First launch in local mode asks you to create a local administrator username and a unique password of at least 12 characters. The installer contains no developer or customer database.
 
-After signing in as administrator, create company-user accounts and assign each to its licensee from the admin panel. Company panels appear on the sign-in screen once their user accounts have been configured. Keep regular backups of the user-data folder.
+Online company panels and accounts must already exist in the hosted service. In local mode, create local company-user accounts and assign each to its licensee from the admin panel. Company panels appear on the sign-in screen once their user accounts have been configured. Keep regular backups of the local user-data folder.
 
 For server deployments, configure `DATABASE_URL` or `NEON_DATABASE_URL` as appropriate. Set both `SUPER_ADMIN_USERNAME` and `SUPER_ADMIN_PASSWORD` to create or reset the administrator during database initialization. The optional `DEFAULT_USER_PASSWORD` seeds missing default company-user accounts; it never resets existing user passwords. Store deployment credentials in the hosting provider's secret environment configuration, never in source control.
 

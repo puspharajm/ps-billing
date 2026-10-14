@@ -258,7 +258,7 @@ export const BasicWelcome: React.FC<BasicWelcomeProps> = ({ settings }) => {
                 <tr>
                   <td style={{ width: '160px', background: '#000080', color: '#fff', padding: '5px 8px', fontWeight: 'bold', border: '1px solid #c0c0c0' }}>{t('Core Engine')}</td>
                   <td className="classic-bevel-in" style={{ padding: '5px 8px', background: '#fff', border: '1px solid #808080' }}>
-                    {t('SMR Groups Billing v1.2.2')}
+                    {t('SMR Groups Billing v1.2.3')}
                   </td>
                   <td style={{ width: '150px', background: '#000080', color: '#fff', padding: '5px 8px', fontWeight: 'bold', border: '1px solid #c0c0c0' }}>{t('Database Driver')}</td>
                   <td className="classic-bevel-in" style={{ padding: '5px 8px', background: '#fff', border: '1px solid #808080', fontWeight: 'bold', color: '#008000' }}>
@@ -371,7 +371,7 @@ export const BasicWelcome: React.FC<BasicWelcomeProps> = ({ settings }) => {
       
       {/* Footer copyright stamp */}
       <div style={{ fontSize: '0.7rem', color: '#505050', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', marginTop: '0.3rem' }}>
-        <span>{t('SMR Groups Billing v1.2.2 • Local SQLite Database • Offline Ready')}</span>
+        <span>{t('SMR Groups Billing v1.2.3 • Shared Online & Local Data')}</span>
         <span>{t('Classic billing and inventory management for your business.')}</span>
       </div>
 

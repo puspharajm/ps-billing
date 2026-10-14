@@ -60,6 +60,43 @@ app.use((req, res, next) => {
   next();
 });
 
+const ONLINE_BILLING_API_BASE_URL = 'https://ps-billing.vercel.app/_/backend/api';
+
+app.use('/api/online', async (req, res) => {
+  if (process.env.ELECTRON !== '1') {
+    return res.status(404).json({ error: 'Online desktop access is only available in the desktop app.' });
+  }
+
+  if (!['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+    return res.status(405).json({ error: 'This request method is not supported.' });
+  }
+
+  const upstreamUrl = `${ONLINE_BILLING_API_BASE_URL}${req.originalUrl.slice('/api/online'.length)}`;
+  const headers = new Headers();
+  const authorization = req.get('authorization');
+  if (authorization) headers.set('Authorization', authorization);
+
+  const hasBody = !['GET', 'HEAD'].includes(req.method);
+  if (hasBody) headers.set('Content-Type', req.get('content-type') || 'application/json');
+
+  try {
+    const upstream = await fetch(upstreamUrl, {
+      method: req.method,
+      headers,
+      ...(hasBody ? { body: JSON.stringify(req.body ?? {}) } : {}),
+      signal: AbortSignal.timeout(20000),
+    });
+    const contentType = upstream.headers.get('content-type');
+    if (contentType) res.setHeader('Content-Type', contentType);
+    const cacheControl = upstream.headers.get('cache-control');
+    if (cacheControl) res.setHeader('Cache-Control', cacheControl);
+    res.status(upstream.status).send(Buffer.from(await upstream.arrayBuffer()));
+  } catch (err) {
+    console.error('Online billing API proxy request failed:', err);
+    res.status(502).json({ error: 'The shared online billing service could not be reached.' });
+  }
+});
+
 // ==========================================
 // AUTHENTICATION MIDDLEWARE
 // ==========================================
@@ -153,7 +190,7 @@ app.get('/api/health', async (req, res) => {
       status: 'ok',
       mode: process.env.VERCEL ? 'vercel-postgres' : (process.env.USE_NEON === 'true' ? 'neon-postgres' : 'sqlite'),
       timestamp: new Date().toISOString(),
-      version: '1.2.2',
+      version: '1.2.3',
     });
   } catch (err: any) {
     res.status(503).json({

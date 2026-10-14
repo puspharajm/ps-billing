@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Building2, LockKeyhole, UserRound } from 'lucide-react';
 import { useAuth } from '../AuthContext';
-import { API_URL } from '../api';
+import { API_URL, getDesktopDataMode, isDesktopApp, switchDesktopDataMode, type DesktopDataMode } from '../api';
 
 interface PublicPanel {
   id: number;
@@ -11,7 +11,7 @@ interface PublicPanel {
   default_username?: string | null;
 }
 
-const isDesktopApp = new URLSearchParams(window.location.search).has('desktop');
+const desktopDataMode: DesktopDataMode = isDesktopApp ? getDesktopDataMode() : 'local';
 
 export default function Login() {
   const { login } = useAuth();
@@ -20,7 +20,7 @@ export default function Login() {
   const [panelsLoading, setPanelsLoading] = useState(true);
   const [panelsError, setPanelsError] = useState('');
   const [setupRequired, setSetupRequired] = useState(false);
-  const [setupLoading, setSetupLoading] = useState(isDesktopApp);
+  const [setupLoading, setSetupLoading] = useState(isDesktopApp && desktopDataMode === 'local');
   const [setupPasswordConfirmation, setSetupPasswordConfirmation] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -33,20 +33,31 @@ export default function Login() {
     let active = true;
     fetch(`${API_URL}/public/panels`, { cache: 'no-store' })
       .then(async response => {
-        if (!response.ok) throw new Error('Company panels are temporarily unavailable.');
+        if (!response.ok) {
+          if (active) {
+            setPanelsError(desktopDataMode === 'online'
+              ? 'The hosted billing service rejected the company-panel request. Update the hosted API and verify its database, or switch to local data.'
+              : 'Company panels are temporarily unavailable.');
+          }
+          return [];
+        }
         return response.json() as Promise<PublicPanel[]>;
       })
       .then(data => {
         if (active) setPanels(data);
       })
       .catch(() => {
-        if (active) setPanelsError('Unable to load company panels. Please refresh or try again later.');
+        if (active) {
+          setPanelsError(desktopDataMode === 'online'
+            ? 'Unable to connect to shared online data. Check your internet connection or switch to local data.'
+            : 'Unable to load company panels. Please refresh or try again later.');
+        }
       })
       .finally(() => {
         if (active) setPanelsLoading(false);
       });
 
-    if (isDesktopApp) {
+    if (isDesktopApp && desktopDataMode === 'local') {
       fetch(`${API_URL}/auth/setup-status`, { cache: 'no-store' })
         .then(async response => {
           const data = await response.json();
@@ -133,6 +144,33 @@ export default function Login() {
           </div>
 
           <h2 id="login-panels-title" className="login-section-title">Company panels</h2>
+          {isDesktopApp && (
+            <div className="login-data-mode" role="group" aria-label="Database mode">
+              <button
+                type="button"
+                className={`login-data-mode-button${desktopDataMode === 'online' ? ' active' : ''}`}
+                aria-pressed={desktopDataMode === 'online'}
+                onClick={() => switchDesktopDataMode('online')}
+              >
+                Shared online data
+              </button>
+              <button
+                type="button"
+                className={`login-data-mode-button${desktopDataMode === 'local' ? ' active' : ''}`}
+                aria-pressed={desktopDataMode === 'local'}
+                onClick={() => switchDesktopDataMode('local')}
+              >
+                Local data (this PC)
+              </button>
+            </div>
+          )}
+          {isDesktopApp && (
+            <p className="login-data-mode-description" role="status">
+              {desktopDataMode === 'online'
+                ? 'Shared online users, company panels, and business data.'
+                : 'Offline data stored only on this PC.'}
+            </p>
+          )}
           {panelsError && <p className="login-panel-message" role="alert">{panelsError}</p>}
           {setupLoading ? (
             <p className="login-panel-message" role="status">Checking desktop setup...</p>
