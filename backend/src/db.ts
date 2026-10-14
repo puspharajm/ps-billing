@@ -13,6 +13,14 @@ dotenv.config();
 
 let isOnline = false;
 
+function isHostedRuntime(): boolean {
+  return Boolean(
+    process.env.VERCEL
+    || process.env.AWS_LAMBDA_FUNCTION_NAME
+    || (process.env.NODE_ENV === 'production' && process.env.ELECTRON !== '1')
+  );
+}
+
 function getConfiguredNeonUrl(): string {
   return process.env.DATABASE_URL || process.env.NEON_DATABASE_URL || '';
 }
@@ -344,8 +352,9 @@ async function initializeNeonDatabase() {
 
 export async function initializeDatabase() {
   const hasNeonConfig = !!(process.env.DATABASE_URL || process.env.NEON_DATABASE_URL);
+  const hostedRuntime = isHostedRuntime();
   const preferLocalPrimary = process.env.ELECTRON === '1'
-    || (!process.env.VERCEL && process.env.USE_NEON !== 'true' && !hasNeonConfig);
+    || (!hostedRuntime && process.env.USE_NEON !== 'true' && !hasNeonConfig);
 
   if (preferLocalPrimary) {
     try {
@@ -363,8 +372,8 @@ export async function initializeDatabase() {
       isOnline = true;
       console.log('Using Neon auth/user database as the configured primary for login and user data.');
     } catch (neonErr: any) {
-      if (process.env.VERCEL) {
-        console.error('Neon auth/user database unavailable in Vercel; local SQLite is not a persistent server database.', neonErr.message || neonErr);
+      if (hostedRuntime) {
+        console.error('Neon auth/user database unavailable in the hosted runtime; local SQLite is not a persistent server database.', neonErr.message || neonErr);
         throw neonErr;
       }
       console.warn('Neon auth/user database unavailable. Falling back to local SQLite.', neonErr.message || neonErr);
@@ -584,6 +593,9 @@ export async function getTenantDb(userId: number): Promise<sqlite3.Database | st
       }
     });
   } else {
+    if (isHostedRuntime()) {
+      throw new Error('Postgres is not initialized; refusing to create an ephemeral SQLite tenant database in a hosted runtime.');
+    }
     // Untaint the filename using a strict regex
     if (!/^billing_tenant_[a-f0-9]{32}\.sqlite$/.test(dbName)) {
       throw new Error("Invalid database filename pattern");
