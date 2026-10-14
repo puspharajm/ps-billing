@@ -67,7 +67,7 @@ app.use((req, res, next) => {
   next();
 });
 
-const ONLINE_BILLING_API_BASE_URL = 'https://ps-billing.vercel.app/_/backend/api';
+const ONLINE_BILLING_API_BASE_URL = 'https://ps-billing-eta.vercel.app/_/backend/api';
 
 app.use('/api/online', async (req, res) => {
   if (process.env.ELECTRON !== '1') {
@@ -197,7 +197,7 @@ app.get('/api/health', async (req, res) => {
       status: 'ok',
       mode: process.env.VERCEL ? 'vercel-postgres' : (process.env.USE_NEON === 'true' ? 'neon-postgres' : 'sqlite'),
       timestamp: new Date().toISOString(),
-      version: '1.2.3',
+      version: '1.2.4',
     });
   } catch (err: any) {
     res.status(503).json({
